@@ -1,6 +1,4 @@
 {
-  description = "A basic rust development setup";
-
   inputs = {
     naersk = {
       url = "github:nix-community/naersk/master";

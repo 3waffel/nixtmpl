@@ -1,10 +1,10 @@
 {
-  description = "A very basic flake";
+  description = "Wafu's flake templates.";
 
   outputs = { self, nixpkgs }: {
     templates = {
-          rust-dev = {
-            path = ./rust-dev;
+          rust = {
+            path = ./rust;
             description = "A basic rust setup";
           };
         };
