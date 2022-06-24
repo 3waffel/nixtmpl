@@ -4,6 +4,10 @@
       url = "github:nix-community/naersk/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    fenix = {
+      url = "github:nix-community/fenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     utils.url = "github:numtide/flake-utils";
     flake-compat = {
@@ -17,36 +21,65 @@
     nixpkgs,
     utils,
     naersk,
+    fenix,
     flake-compat,
   }:
     utils.lib.eachDefaultSystem (
       system: let
         pkgs = import nixpkgs {inherit system;};
-        naersk-lib = pkgs.callPackage naersk {};
+        lib = pkgs.lib;
+        # Use stable toolchain
+        # naersk-lib = pkgs.callPackage naersk {};
+        
+        # Use nightly toolchain
+        rust-nightly = fenix.packages.${system};
+        naersk-lib = let toolchain = with rust-nightly; combine (with minimal; [
+          cargo rustc
+        ]);
+        in naersk.lib.${system}.override {
+          cargo = toolchain;
+          rustc = toolchain;
+        };
+
+        nativeBuildInputs = with pkgs; [
+          pkg-config
+        ];
+        buildInputs = with pkgs; [
+          openssl
+        ];
       in {
         defaultPackage = naersk-lib.buildPackage {
           src = ./.;
-          buildInputs = with pkgs; [pkg-config openssl];
+          inherit nativeBuildInputs buildInputs;
         };
 
         defaultApp = utils.lib.mkApp {drv = self.defaultPackage."${system}";};
 
         devShell = with pkgs;
           mkShell {
-            buildInputs = [
-              # rust
-              cargo
-              cargo-watch
-              rustc
-              rust-analyzer
-              rustfmt
-              rustPackages.clippy
+            # Use stable toolchain
+            # buildInputs = [
+            #   # rust
+            #   cargo
+            #   rustc
+            #   cargo-watch
+            #   rust-analyzer
+            #   rustfmt
+            #   rustPackages.clippy
+            # ] ++ nativeBuildInputs ++ buildInputs;
 
-              # system
-              pkg-config
-              openssl
-              cmake
-            ];
+            # Use nightly toolchain
+            buildInputs = lib.singleton (with rust-nightly; combine (with default; [
+              cargo
+              rustc
+              rust-std
+              clippy-preview
+              latest.rust-src
+            ])) ++ (with pkgs; [
+              rust-nightly.rust-analyzer
+              cargo-expand
+            ]) ++ nativeBuildInputs ++ buildInputs;
+
             shellHook = ''
               export PATH=$HOME/.cargo/bin:$PATH
             '';
