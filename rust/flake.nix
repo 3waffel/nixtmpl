@@ -6,6 +6,10 @@
     };
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     utils.url = "github:numtide/flake-utils";
+    flake-compat = {
+      url = "github:edolstra/flake-compat";
+      flake = false;
+    };
   };
 
   outputs = {
@@ -13,6 +17,7 @@
     nixpkgs,
     utils,
     naersk,
+    flake-compat,
   }:
     utils.lib.eachDefaultSystem (
       system: let
@@ -42,6 +47,9 @@
               openssl
               cmake
             ];
+            shellHook = ''
+              export PATH=$HOME/.cargo/bin:$PATH
+            '';
             RUST_LOG = "info";
             RUST_SRC_PATH = rustPlatform.rustLibSrc;
           };
