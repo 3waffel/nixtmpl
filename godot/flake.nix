@@ -51,7 +51,7 @@
             '';
           };
       in rec {
-        defaultPackage = packages.linux64;
+        packages.default = packages.linux64;
 
         packages.linux64 = with pkgs;
           stdenv.mkDerivation {
@@ -131,14 +131,20 @@
             dontStrip = true;
           };
 
-        devShell = with pkgs;
+        devShells.default = with pkgs;
           mkShell {
             buildInputs = [
               godot-headless
             ];
             nativeBuildInputs = commonNativeBuildInputs;
             shellHook = ''
-              ln -s ${export-templates} "$HOME/.local/share/godot/templates/${godot-version}.stable"
+              mkdir -p "$TMP/.config"
+              mkdir -p "$TMP/.local/share/godot/templates"
+              mkdir -p "$TMP/.config/godot/projects/"
+              export HOME=$TMP
+              export XDG_CONFIG_HOME="$TMP/.config"
+              export XDG_DATA_HOME="$TMP/.local/share"
+              ln -s ${export-templates} "$TMP/.local/share/godot/templates/${godot-version}.stable"
             '';
           };
       }
