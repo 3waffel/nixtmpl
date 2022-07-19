@@ -6,6 +6,14 @@
     nixpkgs,
   }: {
     templates = {
+      trivial = {
+        path = ./trivial;
+        description = "A basic flake setup";
+      };
+      csharp = {
+        path = ./csharp;
+        description = "A basic Csharp setup";
+      };
       rust = {
         path = ./rust;
         description = "A basic rust setup";
@@ -15,5 +23,6 @@
         description = "A generic godot ci template";
       };
     };
+    templates.default = self.templates.trivial;
   };
 }

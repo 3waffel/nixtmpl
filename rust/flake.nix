@@ -1,5 +1,8 @@
 {
   inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    utils.url = "github:numtide/flake-utils";
+    devshell.url = "github:numtide/devshell";
     naersk = {
       url = "github:nix-community/naersk/master";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -8,8 +11,6 @@
       url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    utils.url = "github:numtide/flake-utils";
     flake-compat = {
       url = "github:edolstra/flake-compat";
       flake = false;
@@ -20,18 +21,30 @@
     self,
     nixpkgs,
     utils,
+    devshell,
     naersk,
     fenix,
-    flake-compat,
+    ...
   }:
     utils.lib.eachDefaultSystem (
       system: let
-        pkgs = import nixpkgs {inherit system;};
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [
+            devshell.overlay
+            fenix.overlay
+            (final: prev: {
+              rustWithComponents = prev.fenix.complete.withComponents [
+                "cargo"
+                "clippy"
+                "rust-src"
+                "rustc"
+                "rustfmt"
+              ];
+            })
+          ];
+        };
         lib = pkgs.lib;
-        # Use stable toolchain
-        # naersk-lib = pkgs.callPackage naersk {};
-
-        # Use nightly toolchain
         rust-nightly = fenix.packages.${system};
         naersk-lib = let
           toolchain = with rust-nightly;
@@ -44,57 +57,24 @@
             cargo = toolchain;
             rustc = toolchain;
           };
-
-        nativeBuildInputs = with pkgs; [
-          pkg-config
-        ];
         buildInputs = with pkgs; [
           openssl
+          pkg-config
         ];
       in rec {
         packages.default = naersk-lib.buildPackage {
+          pname = "rust";
           src = ./.;
-          inherit nativeBuildInputs buildInputs;
+          inherit buildInputs;
         };
 
         apps.default = utils.lib.mkApp {drv = packages.default;};
 
-        devShells.default = with pkgs;
-          mkShell {
-            # Use stable toolchain
-            # buildInputs = [
-            #   # rust
-            #   cargo
-            #   rustc
-            #   cargo-watch
-            #   rust-analyzer
-            #   rustfmt
-            #   rustPackages.clippy
-            # ] ++ nativeBuildInputs ++ buildInputs;
-
-            # Use nightly toolchain
-            buildInputs =
-              lib.singleton (with rust-nightly;
-                combine (with default; [
-                  cargo
-                  rustc
-                  rust-std
-                  clippy-preview
-                  latest.rust-src
-                ]))
-              ++ (with pkgs; [
-                rust-nightly.rust-analyzer
-                cargo-expand
-              ])
-              ++ nativeBuildInputs
-              ++ buildInputs;
-
-            shellHook = ''
-              export PATH=$HOME/.cargo/bin:$PATH
-            '';
-            RUST_LOG = "info";
-            RUST_SRC_PATH = rustPlatform.rustLibSrc;
-          };
+        devShells.default = pkgs.devshell.mkShell {
+          imports = [
+            (pkgs.devshell.importTOML ./devshell.toml)
+          ];
+        };
       }
     );
 }

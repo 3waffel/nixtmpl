@@ -1,0 +1,10 @@
+[devshell]
+packages = [
+    "alejandra",
+    "mono",
+    "omnisharp-roslyn",
+]
+
+[[commands]]
+package = "treefmt"
+category = "formatter"
