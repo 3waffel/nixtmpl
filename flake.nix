@@ -14,6 +14,10 @@
         path = ./csharp;
         description = "A basic Csharp setup";
       };
+      riff = {
+        path = ./riff;
+        description = "build rust project with riff";
+      };
       rust = {
         path = ./rust;
         description = "A basic rust setup";
