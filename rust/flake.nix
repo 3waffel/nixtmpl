@@ -11,10 +11,6 @@
       url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    flake-compat = {
-      url = "github:edolstra/flake-compat";
-      flake = false;
-    };
   };
 
   outputs = {
@@ -34,25 +30,23 @@
             devshell.overlay
             fenix.overlay
             (final: prev: {
-              rustWithComponents = prev.fenix.complete.withComponents [
-                "cargo"
-                "clippy"
-                "rust-src"
-                "rustc"
-                "rustfmt"
-              ];
+              toolchain = with prev.fenix;
+                combine [
+                  (complete.withComponents [
+                    "cargo"
+                    "clippy"
+                    "rust-src"
+                    "rustc"
+                    "rustfmt"
+                  ])
+                  targets.wasm32-unknown-unknown.latest.rust-std
+                  targets.x86_64-pc-windows-gnu.latest.rust-std
+                ];
             })
           ];
         };
         lib = pkgs.lib;
-        rust-nightly = fenix.packages.${system};
-        naersk-lib = let
-          toolchain = with rust-nightly;
-            combine (with minimal; [
-              cargo
-              rustc
-            ]);
-        in
+        naersk-lib = with pkgs;
           naersk.lib.${system}.override {
             cargo = toolchain;
             rustc = toolchain;

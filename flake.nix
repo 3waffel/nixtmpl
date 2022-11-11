@@ -6,13 +6,13 @@
     nixpkgs,
   }: {
     templates = {
+      devshell = {
+        path = ./devshell;
+        description = "A basic flake setup with devshell";
+      };
       tauri = {
         path = ./tauri;
         description = "tauri project setup";
-      };
-      trivial = {
-        path = ./trivial;
-        description = "A basic flake setup";
       };
       csharp = {
         path = ./csharp;
@@ -31,6 +31,6 @@
         description = "A generic godot ci template";
       };
     };
-    templates.default = self.templates.trivial;
+    templates.default = self.templates.devshell;
   };
 }
