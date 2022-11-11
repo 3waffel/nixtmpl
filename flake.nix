@@ -6,6 +6,10 @@
     nixpkgs,
   }: {
     templates = {
+      tauri = {
+        path = ./tauri;
+        description = "tauri project setup";
+      };
       trivial = {
         path = ./trivial;
         description = "A basic flake setup";
