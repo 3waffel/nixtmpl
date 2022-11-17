@@ -45,21 +45,22 @@
             })
           ];
         };
-        lib = pkgs.lib;
         naersk-lib = with pkgs;
           naersk.lib.${system}.override {
             cargo = toolchain;
             rustc = toolchain;
           };
+        nativeBuildInputs = with pkgs; [
+          pkg-config
+        ];
         buildInputs = with pkgs; [
           openssl
-          pkg-config
         ];
       in rec {
         packages.default = naersk-lib.buildPackage {
           pname = "rust";
           src = ./.;
-          inherit buildInputs;
+          inherit nativeBuildInputs buildInputs;
         };
 
         apps.default = utils.lib.mkApp {drv = packages.default;};
