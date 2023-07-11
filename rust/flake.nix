@@ -2,6 +2,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     utils.url = "github:numtide/flake-utils";
+    devshell.url = "github:numtide/devshell";
     naersk = {
       url = "github:nix-community/naersk/master";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -16,6 +17,7 @@
     self,
     nixpkgs,
     utils,
+    devshell,
     naersk,
     fenix,
     ...
@@ -25,6 +27,7 @@
         pkgs = import nixpkgs {
           inherit system;
           overlays = [
+            devshell.overlays.default
             fenix.overlays.default
             (final: prev: {
               toolchain = with prev.fenix;
@@ -62,11 +65,15 @@
 
         apps.default = utils.lib.mkApp {drv = packages.default;};
 
-        devShells.default = with pkgs;
-          mkShell {
-            nativeBuildInputs = [toolchain pkg-config];
-            buildInputs = [alejandra dprint openssl treefmt];
-          };
+        devShells.default = pkgs.devshell.mkShell {
+          packages = with pkgs; [
+            alejandra
+            direnv
+            taplo-cli
+            treefmt
+            toolchain
+          ];
+        };
       }
     );
 }

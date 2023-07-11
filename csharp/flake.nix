@@ -21,7 +21,7 @@
         pkgs = import nixpkgs {
           inherit system;
           overlays = [
-            devshell.overlay
+            devshell.overlays.default
           ];
         };
         dependencies = with pkgs; [mono]; # Input the build dependencies here
@@ -63,8 +63,11 @@
         packages.default = self.packages.${system}.${packageName};
 
         devShells.default = pkgs.devshell.mkShell {
-          imports = [
-            (pkgs.devshell.importTOML ./devshell.toml)
+          packages = with pkgs; [
+            alejandra
+            mono
+            omnisharp-roslyn
+            treefmt
           ];
         };
       }

@@ -21,13 +21,16 @@
         pkgs = import nixpkgs {
           inherit system;
           overlays = [
-            devshell.overlay
+            devshell.overlays.default
           ];
         };
       in {
         devShells.default = pkgs.devshell.mkShell {
-          imports = [
-            (pkgs.devshell.importTOML ./devshell.toml)
+          packages = with pkgs; [
+            alejandra
+            direnv
+            taplo-cli
+            treefmt
           ];
         };
       }
