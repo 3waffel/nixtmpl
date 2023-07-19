@@ -10,10 +10,6 @@
         path = ./devshell;
         description = "A basic flake setup with devshell";
       };
-      tauri = {
-        path = ./tauri;
-        description = "tauri project setup";
-      };
       csharp = {
         path = ./csharp;
         description = "A basic Csharp setup";
