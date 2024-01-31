@@ -12,7 +12,7 @@ jobs:
           lfs: true
 
       - name: Install Nix
-        uses: cachix/install-nix-action@v15
+        uses: cachix/install-nix-action@v22
         with:
           extra_nix_config: |
             access-tokens = github.com=${{ github.token }}

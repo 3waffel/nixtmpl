@@ -18,9 +18,9 @@
         path = ./rust;
         description = "A basic rust setup";
       };
-      godot = {
-        path = ./godot;
-        description = "A generic godot ci template";
+      godot3 = {
+        path = ./godot3;
+        description = "A generic godot3 ci template";
       };
     };
     templates.default = self.templates.devshell;
