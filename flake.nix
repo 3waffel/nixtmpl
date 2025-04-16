@@ -1,28 +1,29 @@
 {
-  description = "Wafu's flake templates";
-
-  outputs = {
-    self,
-    nixpkgs,
-  }: {
-    templates = {
-      devshell = {
-        path = ./devshell;
-        description = "A basic flake setup with devshell";
-      };
-      csharp = {
-        path = ./csharp;
-        description = "A basic Csharp setup";
-      };
-      rust = {
-        path = ./rust;
-        description = "A basic rust setup";
-      };
-      godot3 = {
-        path = ./godot3;
-        description = "A generic godot3 ci template";
-      };
-    };
-    templates.default = self.templates.devshell;
+  outputs = {self}: let
+    pathMapper = builtins.map (
+      path: let
+        flake = import "${path}/flake.nix";
+        description =
+          if builtins.hasAttr "description" flake
+          then flake.description
+          else "(no description)";
+      in {
+        name = builtins.baseNameOf path;
+        value = {inherit path description;};
+      }
+    );
+    mkTemplates = paths: builtins.listToAttrs (pathMapper paths);
+  in {
+    templates =
+      {default = self.templates.minimal;}
+      // mkTemplates [
+        ./csharp
+        ./devshell
+        ./flutter
+        ./godot3
+        ./latex
+        ./minimal
+        ./rust
+      ];
   };
 }
